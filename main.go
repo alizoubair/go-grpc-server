@@ -22,7 +22,7 @@ func main() {
 			panic(err)
 		}
 	}()
-	
+
 	defer func() {
 		err := dbW.Close()
 		if err != nil {
@@ -30,9 +30,10 @@ func main() {
 		}
 	}()
 
-	userRepo := user.NewUserRepository(dbR, dbW)
-	userSvc := user.NewUserService(userRepo)
+	log := conf.InitLog()
 
+	userRepo := user.NewUserRepository(dbR, dbW)
+	userSvc := user.NewUserService(log, userRepo)
 
 	list, err := net.Listen("tcp", ":"+conf.Configuration.Port)
 	if err != nil {

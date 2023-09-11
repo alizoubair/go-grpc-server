@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/alizoubair/go-grpc-server/api/api_struct/form"
 	"github.com/alizoubair/go-grpc-server/api/api_struct/model"
+	"github.com/sirupsen/logrus"
 )
 
 type UserService interface {
@@ -18,13 +18,15 @@ type UserService interface {
 }
 
 type userService struct {
+	log        *logrus.Entry
 	repository UserRepository
 }
 
 var _ UserService = (*userService)(nil)
 
-func NewUserService(r UserRepository) UserService {
+func NewUserService(log *logrus.Entry, r UserRepository) UserService {
 	return &userService{
+		log:        log,
 		repository: r,
 	}
 }
@@ -40,8 +42,8 @@ func (s *userService) CreateUser(ctx context.Context, req *form.UserForm) (*mode
 
 	user, err := s.repository.CreateUser(ctx, userReq)
 	if err != nil {
-		log.Printf("can't create user: %s", err.Error())
-		return nil, err
+		s.log.Errorf("can't create user: %s", err.Error())
+		return nil, errors.New("Something went wrong. Please try again later")
 	}
 
 	return user, nil
@@ -53,7 +55,7 @@ func (s *userService) GetUser(ctx context.Context, id, selectField string) (*mod
 		return nil, errors.New("User not found")
 	}
 	if err != nil {
-		log.Printf("can't get user: %s with id %v", err.Error(), id)
+		s.log.Errorf("can't get user: %s with id %v", err.Error(), id)
 		return nil, err
 	}
 
@@ -71,25 +73,27 @@ func (s *userService) UpdateUser(ctx context.Context, req *form.UserForm, id str
 
 	user, err := s.repository.UpdateUser(ctx, user)
 	if err != nil {
+		s.log.Errorf("can't update user: %s with id %v", err.Error(), id)
 		return nil, errors.New("Something went wrong. Please try again later")
 	}
 
 	return user, nil
 }
 
-
 func (s *userService) DeleteUser(ctx context.Context, id string) error {
 	_, err := s.repository.GetUser(ctx, id, "id")
-	if err != sql.ErrNoRows {
+	if err == sql.ErrNoRows {
 		return errors.New("User not found")
 	}
 
 	if err != nil {
+		s.log.Errorf("can't get user: %s with id %v", err.Error(), id)
 		return errors.New("Something went wrong. Please try again later")
 	}
 
 	err = s.repository.DeleteUser(ctx, id)
 	if err != nil {
+		s.log.Errorf("can't delete user: %s", err.Error())
 		return errors.New("Something went wrong. Please try again later")
 	}
 
