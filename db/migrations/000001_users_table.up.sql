@@ -5,5 +5,6 @@ CREATE TABLE "users" (
     "address" VARCHAR NOT NULL,
     "phone" VARCHAR NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT (now()),
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT (now())
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT (now()),
+    "deleted_at" TIMESTAMPTZ NOT NULL DEFAULT (now())
 )
