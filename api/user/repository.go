@@ -11,6 +11,7 @@ import (
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.UserModel) (*model.UserModel, error)
 	GetUser(ctx context.Context, id, selectField string) (*model.UserModel, error)
+	GetUsers(ctx context.Context, filter map[string]interface{}, where, orderBy, selectField string)([]*model.UserModel, error)
 	UpdateUser(ctx context.Context, user *model.UserModel) (*model.UserModel, error)
 	DeleteUser(ctx context.Context, id string) error
 }
@@ -50,6 +51,17 @@ func (r *userRepository) GetUser(ctx context.Context, id, selectField string) (*
 	err := r.DBRead.Get(user, namedQuery, args...)
 
 	return user, err
+}
+
+func (r *userRepository) GetUsers(ctx context.Context, filter map[string]interface{}, where, orderBy, selectField string) ([]*model.UserModel, error) {
+	users := []*model.UserModel{}
+	if len(selectField) == 0 {
+		selectField = model.UserSelectField
+	}
+	query := fmt.Sprintf("SELECT %s FROM users %s ORDER BY %s LIMIT :limit OFFSET :offset", selectField, where, orderBy)
+	namedQuery, args, _ := r.DBRead.BindNamed(query, filter)
+	err := r.DBRead.Select(&users, namedQuery, args...)
+	return users, err
 }
 
 func (r *userRepository) UpdateUser(ctx context.Context, user *model.UserModel) (*model.UserModel, error) {
