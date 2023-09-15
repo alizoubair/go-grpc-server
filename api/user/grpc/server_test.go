@@ -17,7 +17,7 @@ import (
 func TestDeliveryCreateFail(t *testing.T) {
 	server := grpc.NewServer()
 	mockService := new(mocks.UserService)
-	mockService.On("CreateUser", mock.AnythingOfType("*form.UserForm")).Return(nil, errors.New("Unexpected database error"))
+	mockService.On("CreateUser", context.Background() ,mock.AnythingOfType("*form.UserForm")).Return(nil, errors.New("Unexpected database error"))
 	usrCtrl := usrGrpc.NewUserServerGrpc(server, mockService)
 
 	createUserRes, err := usrCtrl.CreateUser(context.Background(), &proto.CreateUserRequest{
@@ -42,7 +42,7 @@ func TestDeliveryCreateSuccess(t *testing.T) {
 
 	server := grpc.NewServer()
 	mockService := new(mocks.UserService)
-	mockService.On("CreateUser", mock.AnythingOfType("*form.UserForm")).Return(user, nil)
+	mockService.On("CreateUser", context.Background(), mock.AnythingOfType("*form.UserForm")).Return(user, nil)
 	usrCtrl := usrGrpc.NewUserServerGrpc(server, mockService)
 
 	createUserReq, err := usrCtrl.CreateUser(context.Background(), &proto.CreateUserRequest{
