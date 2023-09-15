@@ -42,7 +42,7 @@ func TestServiceCreateUser(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockRepo.On("CreateUser", mockUser).Return(mockUser, nil).Once()
+		mockRepo.On("CreateUser", context.Background(), mockUser).Return(mockUser, nil).Once()
 		u := user.NewUserService(log, mockRepo)
 
 		userRow, err := u.CreateUser(context.Background(), reqUser)
@@ -54,7 +54,7 @@ func TestServiceCreateUser(t *testing.T) {
 	})
 
 	t.Run("failed", func(t *testing.T) {
-		mockRepo.On("CreateUser", mockUser).Return(nil, errors.New("Unexpected database error")).Once()
+		mockRepo.On("CreateUser", context.Background() ,mockUser).Return(nil, errors.New("Unexpected database error")).Once()
 		u := user.NewUserService(log, mockRepo)
 
 		userRow, err := u.CreateUser(context.Background(), reqUser)
